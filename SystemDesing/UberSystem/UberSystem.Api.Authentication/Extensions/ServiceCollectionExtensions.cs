@@ -76,7 +76,7 @@ namespace UberSystem.Api.Authentication.Extensions
             {
 	            var smtpClient = new SmtpClient();
 	            smtpClient.Connect("smtp-mail.outlook.com", 587, SecureSocketOptions.StartTls);
-	            smtpClient.Authenticate("your-email", "your-password");
+	            smtpClient.Authenticate("weufust@gmail.com", "TrNm123!2");
 	            return smtpClient;
             });
             services.AddScoped(typeof(TokenService));

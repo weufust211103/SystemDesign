@@ -10,12 +10,9 @@ using UberSystem.Service;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<UberSystemDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("UberSystemDatabase")));
 
-// Register Identity
-builder.Services.AddIdentity<User, IdentityRole>()
-    .AddEntityFrameworkStores<UberSystemDbContext>()
-    .AddDefaultTokenProviders();
+
 
 // Register IUserService
 builder.Services.AddScoped<IUserService, UserService>();
