@@ -10,6 +10,7 @@ builder.Services.AddControllers();
 builder.Services.AddAuthorization();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IDriverService, DriverService>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<DbFactory>(); // Register DbFactory
 builder.Services.AddDbContext<UberSystemDbContext>(options =>

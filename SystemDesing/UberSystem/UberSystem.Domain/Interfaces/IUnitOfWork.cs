@@ -4,6 +4,8 @@ namespace UberSystem.Domain.Interfaces
 {
     public interface IUnitOfWork : IDisposable
 	{
+
+
     	DbContext DbContext { get; }
  
     	/// <summary>

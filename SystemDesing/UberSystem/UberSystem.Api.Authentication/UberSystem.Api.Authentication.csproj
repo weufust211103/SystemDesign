@@ -1,5 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 	<ItemGroup>
+		<ProjectReference Include="..\UberSystem.Api.Customer\UberSystem.Api.Customer.csproj" />
+		<ProjectReference Include="..\UberSystem.Api.Driver\UberSystem.Api.Driver.csproj" />
 		<ProjectReference Include="..\UberSystem.Domain\UberSystem.Domain.csproj" />
 		<ProjectReference Include="..\UberSystem.Infrastructure\UberSystem.Infrastructure.csproj" />
 		<ProjectReference Include="..\UberSystem.Service\UberSystem.Service.csproj" />
@@ -19,6 +21,7 @@
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.0" />
 		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="7.0.0" />
 		<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.20" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.20" />
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
 	</ItemGroup>
 

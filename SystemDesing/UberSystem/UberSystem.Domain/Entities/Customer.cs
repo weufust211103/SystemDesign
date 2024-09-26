@@ -1,10 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace UberSystem.Domain.Entities;
 
 public partial class Customer
 {
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)] // Auto-increment
     public long Id { get; set; }
 
     public byte[] CreateAt { get; set; } = null!;

@@ -16,6 +16,7 @@ builder.Services.AddDbContext<UberSystemDbContext>(options =>
 
 // Register IUserService
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IDriverService, DriverService>();
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

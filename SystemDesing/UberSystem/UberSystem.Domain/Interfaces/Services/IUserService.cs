@@ -4,7 +4,10 @@ namespace UberSystem.Domain.Interfaces.Services
 {
     public interface IUserService
 	{
+        Task<IEnumerable<User>> GetAllUsers();
+
         Task<User> FindByEmail(string  email);
+        Task Delete(int id);
         Task Update(User user);
         Task Add(User user);
         Task<bool> Login(User user);
