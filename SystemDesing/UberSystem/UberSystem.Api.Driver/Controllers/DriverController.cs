@@ -30,16 +30,23 @@ namespace UberSystem.Api.Driver.Controllers
             return Ok(drivers);
         }
 
-        // GET: api/driver/user/{userId}
-        [HttpGet("uber-system/{userId}")]
+        // GET: api/driver/user/
+        [HttpGet("uber-system/get-user-info")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<UberSystem.Domain.Entities.Driver>> GetDriverByUserId(long userId)
+        public async Task<ActionResult<UberSystem.Domain.Entities.Driver>> GetDriverByToken()
         {
+            // Extract userId from token claims
+            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value;
+            if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
+            {
+                return Unauthorized("Invalid token.");
+            }
+
             var driver = await _driverService.GetDriverByUserId(userId);
             if (driver == null)
             {
-                return NotFound();
+                return NotFound("Driver not found.");
             }
             return Ok(driver);
         }
@@ -52,8 +59,15 @@ namespace UberSystem.Api.Driver.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> UpdateDriver([FromBody] DriverDto driverDto)
         {
-            // Find the user based on the provided UserId
-            var user = await _context.Users.FindAsync(driverDto.UserId);
+            // Extract userId from token claims
+            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value;
+            if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
+            {
+                return Unauthorized("Invalid token.");
+            }
+
+            // Find the user based on the userId from the token
+            var user = await _context.Users.FindAsync(userId);
             if (user == null)
             {
                 return NotFound("User not found.");
@@ -70,7 +84,7 @@ namespace UberSystem.Api.Driver.Controllers
             }
 
             // Update driver details
-            var driver = await _context.Drivers.FirstOrDefaultAsync(d => d.UserId == driverDto.UserId);
+            var driver = await _context.Drivers.FirstOrDefaultAsync(d => d.UserId == userId);
             if (driver == null)
             {
                 return NotFound("Driver not found.");
@@ -78,7 +92,6 @@ namespace UberSystem.Api.Driver.Controllers
 
             driver.LocationLatitude = driverDto.LocationLatitude;
             driver.LocationLongitude = driverDto.LocationLongitude;
-            
 
             // Update user and driver records in the database
             _context.Entry(user).State = EntityState.Modified;
@@ -90,7 +103,7 @@ namespace UberSystem.Api.Driver.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!UserExists(driverDto.UserId))
+                if (!UserExists(userId))
                 {
                     return NotFound("User not found.");
                 }
@@ -103,25 +116,27 @@ namespace UberSystem.Api.Driver.Controllers
             return Ok("Driver and user updated successfully.");
         }
 
-        // DELETE: api/driver/{id}
-        [HttpDelete("uber-system/{id}")]
+        // DELETE: api/driver/uber-system
+        [HttpDelete("uber-system/self-delete")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> DeleteDriver(long id)
+        public async Task<IActionResult> DeleteDriverByToken()
         {
-            var existingDriver = await _driverService.GetDriverByUserId(id);
-            if (existingDriver == null)
+            // Extract userId from token claims
+            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value;
+            if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
             {
-                return NotFound();
+                return Unauthorized("Invalid token.");
             }
 
-            await _driverService.Delete(id);
-            return NoContent();
-        }
+            var existingDriver = await _driverService.GetDriverByUserId(userId);
+            if (existingDriver == null)
+            {
+                return NotFound("Driver not found.");
+            }
 
-        private bool UserExists(long userId)
-        {
-            return _context.Users.Any(u => u.Id == userId);
+            await _driverService.Delete(userId);
+            return NoContent();
         }
     }
 }

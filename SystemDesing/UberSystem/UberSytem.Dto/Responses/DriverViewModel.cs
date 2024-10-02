@@ -8,7 +8,6 @@ namespace UberSytem.Dto.Responses
 {
     public class DriverViewModel
     {
-        public long Id { get; set; }
         public long? CabId { get; set; }
         public DateTime? Dob { get; set; }
         public double? LocationLatitude { get; set; }

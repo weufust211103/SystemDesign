@@ -20,20 +20,25 @@ public class TokenService
         if (user == null) throw new ArgumentNullException(nameof(user));
         if (roles == null) throw new ArgumentNullException(nameof(roles));
 
+        // Create the security key
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:SecretKey"]));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
+        // Create the claims to be included in the token
         var claims = new List<Claim>
     {
         new Claim(ClaimTypes.Name, user.Email),
-        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()), // Standard NameIdentifier claim
+        new Claim("userId", user.Id.ToString()) // Explicit userId claim for convenience
     };
 
+        // Add user roles to the claims
         foreach (var role in roles)
         {
             claims.Add(new Claim(ClaimTypes.Role, role));
         }
 
+        // Generate the token
         var token = new JwtSecurityToken(
             issuer: _configuration["JwtSettings:Issuer"],
             audience: _configuration["JwtSettings:Audience"],
@@ -42,6 +47,7 @@ public class TokenService
             signingCredentials: credentials
         );
 
+        // Return the token as a string
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 

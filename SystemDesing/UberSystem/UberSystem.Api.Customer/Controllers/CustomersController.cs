@@ -47,17 +47,24 @@ namespace UberSystem.Api.Customer.Controllers
         /// 
         /// </remarks>
 
-        [HttpGet("customer/{userId}")]
+        [HttpGet("customer")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<Domain.Entities.Customer>> GetCustomerByUserId(int userId)
+        public async Task<ActionResult<Domain.Entities.Customer>> GetCustomerByToken()
         {
             if (_context.Customers == null)
             {
                 return NotFound();
             }
 
-            var customer = await _context.Customers
-                                         .FirstOrDefaultAsync(c => c.UserId == userId);
+            // Extract the userId from the token claims
+            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value;
+            if (userIdClaim == null || !int.TryParse(userIdClaim, out var userId))
+            {
+                return Unauthorized("Invalid token.");
+            }
+
+            // Find the customer by userId
+            var customer = await _context.Customers.FirstOrDefaultAsync(c => c.UserId == userId);
 
             if (customer == null)
             {
@@ -69,13 +76,20 @@ namespace UberSystem.Api.Customer.Controllers
 
 
         [HttpPut("update-customer")]
-        [Authorize(Roles = "0")]
+        [Authorize(Roles = "0")] // Ensure only authorized users with role 0 can update
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> UpdateCustomer([FromBody] CustomerDto customerDto)
         {
-            // Find the user based on the provided UserId
-            var user = await _context.Users.FindAsync(customerDto.UserId);
+            // Extract the userId from the token claims
+            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value;
+            if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
+            {
+                return Unauthorized("Invalid token.");
+            }
+
+            // Find the user based on the userId from the token
+            var user = await _context.Users.FindAsync(userId);
             if (user == null)
             {
                 return NotFound("User not found.");
@@ -104,14 +118,7 @@ namespace UberSystem.Api.Customer.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!UserExists(customerDto.UserId))
-                {
-                    return NotFound("User not found.");
-                }
-                else
-                {
-                    throw; // Handle other potential exceptions
-                }
+                return BadRequest("An error occurred while updating the user.");
             }
 
             return Ok("User updated successfully.");
@@ -119,27 +126,33 @@ namespace UberSystem.Api.Customer.Controllers
 
         private bool UserExists(long userId)
         {
-            return _context.Users.Any(e => e.Id == userId); // Adjust as necessary to match your user identifier
+            return _context.Users.Any(e => e.Id == userId); 
         }
 
-        [HttpDelete("customer/{userId}")]
-        [Authorize(Roles = "0")]
-        public async Task<IActionResult> DeleteCustomerByUserId(long userId)
+        [HttpDelete("customer")]
+        [Authorize(Roles = "0")] 
+        public async Task<IActionResult> DeleteCustomerByToken()
         {
             if (_context.Customers == null || _context.Users == null)
             {
                 return NotFound();
             }
 
-            // Find customer by UserId
-            var customer = await _context.Customers
-                                         .FirstOrDefaultAsync(c => c.UserId == userId);
+            // Extract the userId from the token claims
+            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value;
+            if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
+            {
+                return Unauthorized("Invalid token.");
+            }
+
+            // Find customer by userId
+            var customer = await _context.Customers.FirstOrDefaultAsync(c => c.UserId == userId);
             if (customer == null)
             {
                 return NotFound("Customer not found.");
             }
 
-            // Find user by UserId
+            // Find user by userId
             var user = await _context.Users.FindAsync(userId);
             if (user == null)
             {
@@ -152,10 +165,8 @@ namespace UberSystem.Api.Customer.Controllers
 
             await _context.SaveChangesAsync();
 
-            // Return a success message
             return Ok("Customer and associated user deleted successfully.");
         }
-
 
 
     }
